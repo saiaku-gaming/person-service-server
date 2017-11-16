@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<!-- Your own application should inherit from spring-boot-starter-parent -->
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.5.8.RELEASE</version>
+	</parent>
+
+	<artifactId>person-service</artifactId>
+	<groupId>com.valhallagame.valhalla</groupId>
+	<packaging>pom</packaging>
+	<version>1.0-SNAPSHOT</version>
+
+	<name>Person Service</name>
+	<description>Services the persons</description>
+	<url>https://valhalla-game.com</url>
+
+	<organization>
+		<name>Team Sämst HB</name>
+		<url>https://sämst.se</url>
+	</organization>
+
+	<modules>
+		<module>person-service-server</module>
+		<module>person-service-client</module>
+	</modules>
+
+
+</project>
