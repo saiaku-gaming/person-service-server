@@ -110,9 +110,54 @@ public class PersonController {
 		}
 	}
 
-	// @RequestMapping(path = "/check-login", method = RequestMethod.POST)
-	// @ResponseBody
-	// public ResponseEntity<?> login() {
-	// return JS.message(OK, "User is logged in.");
-	// }
+	@RequestMapping(path = "/logout", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<?> logout(@RequestBody UsernameParameter input) {
+		Person user = personService.getPerson(input.getUsername()).orElse(null);
+		if (user == null) {
+			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with username: " + input.getUsername());
+		}
+
+		user.setOnline(false);
+		// TODO clear the persons messages
+		// chatService.clearMessagesForPerson(user);
+		user = personService.savePerson(user);
+		Optional<Session> optSession = sessionService.getSessionFromPerson(user);
+		if (optSession.isPresent()) {
+			sessionService.deleteSession(optSession.get());
+		}
+
+		// TODO notify that the person has gone offline
+		// notificationService.notifyPartyAndFriends(user, "Offline");
+		return JS.message(HttpStatus.OK, "Logged out");
+	}
+
+	@RequestMapping(path = "/check-login", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<?> checkLogin(@RequestBody UsernameParameter input) {
+		Person user = personService.getPerson(input.getUsername()).orElse(null);
+		if (user == null) {
+			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with username: " + input.getUsername());
+		}
+		Optional<Session> optSession = sessionService.getSessionFromPerson(user);
+		if (optSession.isPresent()) {
+			return JS.message(HttpStatus.OK, "User is logged in.");
+		} else {
+			return JS.message(HttpStatus.NOT_FOUND, "User is not logged in.");
+		}
+	}
+
+	@RequestMapping(path = "/username-available", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<?> userAvaliable(@RequestBody UsernameParameter input) {
+		if (input.getUsername().length() > 30) {
+			return JS.message(HttpStatus.CONFLICT, "Username too long.");
+		}
+		Optional<Person> userOpt = personService.getPerson(input.getUsername());
+		if (userOpt.isPresent()) {
+			return JS.message(HttpStatus.CONFLICT, "Username is not available.");
+		} else {
+			return JS.message(HttpStatus.OK, "Username is available.");
+		}
+	}
 }
