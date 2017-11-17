@@ -9,16 +9,34 @@ import com.valhallagame.personserviceclient.model.Person;
 import com.valhallagame.personserviceclient.model.UsernameParameter;
 
 public class PersonServiceClient {
-	private static final String SERVER_URL = "http://localhost:1235";
+	private static PersonServiceClient personServiceClient;
 
-	public static Optional<Person> getPerson(String username) {
+	private String personServiceServerUrl = "http://localhost:1235";
+
+	private PersonServiceClient() {
+	}
+
+	public Optional<Person> getPerson(String username) {
 		RestTemplate restTemplate = new RestTemplate();
 		try {
-			return Optional.ofNullable(restTemplate.postForObject(SERVER_URL + "/v1/person/get-person",
+			return Optional.ofNullable(restTemplate.postForObject(personServiceServerUrl + "/v1/person/get-person",
 					new UsernameParameter(username), Person.class));
 		} catch (RestClientException e) {
 			e.printStackTrace();
 			return Optional.empty();
 		}
+	}
+
+	public static void init(String personServiceServerUrl) {
+		PersonServiceClient client = get();
+		client.personServiceServerUrl = personServiceServerUrl;
+	}
+
+	public static PersonServiceClient get() {
+		if (personServiceClient == null) {
+			personServiceClient = new PersonServiceClient();
+		}
+
+		return personServiceClient;
 	}
 }
