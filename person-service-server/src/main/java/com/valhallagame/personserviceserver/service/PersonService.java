@@ -13,6 +13,10 @@ public class PersonService {
 	@Autowired
 	private PersonRepository personRepository;
 
+	public Person savePerson(Person person) {
+		return personRepository.save(person);
+	}
+
 	public Optional<Person> getPerson(String username) {
 		return personRepository.findByUsername(username);
 	}

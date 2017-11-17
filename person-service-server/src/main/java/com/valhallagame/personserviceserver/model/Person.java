@@ -22,8 +22,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "person")
 public class Person {
 	@Id
-	@SequenceGenerator(name = "person_id_seq", sequenceName = "person_id_seq", allocationSize = 1)
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "person_id_seq")
+	@SequenceGenerator(name = "person_person_id_seq", sequenceName = "person_person_id_seq", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "person_person_id_seq")
 	@Column(name = "person_id", updatable = false)
 	private Integer id;
 
@@ -45,6 +45,13 @@ public class Person {
 	@Column(name = "last_heartbeat")
 	@Basic
 	private Instant lastHeartbeat;
+
+	public Person(String username, String plaintextPassword) {
+		this.setUsername(username.toLowerCase());
+		this.setDisplayUsername(username);
+		this.password = BCrypt.hashpw(plaintextPassword, BCrypt.gensalt());
+		this.lastHeartbeat = Instant.now();
+	}
 
 	public boolean validatePassword(String plaintextPassword) {
 		return BCrypt.checkpw(plaintextPassword, getPassword());
