@@ -23,6 +23,10 @@ public class SessionService {
 		sessionRepository.delete(session);
 	}
 
+	public Optional<Session> getSessionFromId(String id) {
+		return sessionRepository.findById(id);
+	}
+
 	public Optional<Session> getSessionFromPerson(Person person) {
 		return sessionRepository.findByPerson(person);
 	}

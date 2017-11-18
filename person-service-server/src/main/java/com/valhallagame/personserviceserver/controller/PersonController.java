@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.valhallagame.common.JS;
+import com.valhallagame.personserviceserver.message.TokenParameter;
 import com.valhallagame.personserviceserver.message.UsernameParameter;
 import com.valhallagame.personserviceserver.message.UsernamePasswordParameter;
 import com.valhallagame.personserviceserver.model.Person;
@@ -158,6 +159,31 @@ public class PersonController {
 			return JS.message(HttpStatus.CONFLICT, "Username is not available.");
 		} else {
 			return JS.message(HttpStatus.OK, "Username is available.");
+		}
+	}
+
+	@RequestMapping(path = "/get-session-from-token", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<?> getSessionFromToken(@RequestBody TokenParameter input) {
+		Optional<Session> optSession = sessionService.getSessionFromId(input.getToken());
+		if (optSession.isPresent()) {
+			return JS.message(HttpStatus.OK, optSession.get());
+		} else {
+			return JS.message(HttpStatus.NOT_FOUND, "No session with that token was found!");
+		}
+	}
+
+	@RequestMapping(path = "/validate-credentials", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<?> validateCredentials(@RequestBody UsernamePasswordParameter input) {
+		Optional<Person> optPerson = personService.getPerson(input.getUsername());
+		if (!optPerson.isPresent()) {
+			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with that username/password combination");
+		}
+		if (optPerson.get().validatePassword(input.getPassword())) {
+			return JS.message(HttpStatus.OK, "credentials valid");
+		} else {
+			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with that username/password combination");
 		}
 	}
 }

@@ -9,8 +9,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,7 +27,6 @@ public class Session {
 	private Instant timestamp;
 
 	@OneToOne
-	@JsonIgnore
 	@JoinColumn(name = "person_id")
 	private Person person;
 
