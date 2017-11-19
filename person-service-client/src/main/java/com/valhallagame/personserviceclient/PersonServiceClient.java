@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 
+import com.valhallagame.common.DefaultServicePortMappings;
 import com.valhallagame.common.RestCaller;
 import com.valhallagame.common.RestResponse;
 import com.valhallagame.personserviceclient.model.Person;
@@ -16,7 +17,7 @@ import com.valhallagame.personserviceclient.model.UsernamePasswordParameter;
 public class PersonServiceClient {
 	private static PersonServiceClient personServiceClient;
 
-	private String personServiceServerUrl = "http://localhost:1235";
+	private String personServiceServerUrl = "http://localhost:" + DefaultServicePortMappings.PERSON_SERVICE_PORT;
 	private RestCaller restCaller;
 
 	private PersonServiceClient() {
