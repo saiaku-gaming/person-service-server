@@ -37,88 +37,48 @@ public class PersonServiceClient {
 		return personServiceClient;
 	}
 
-	public RestResponse<Person> getPerson(String username) {
-		try {
-			return restCaller.postCall(personServiceServerUrl + "/v1/person/get-person",
-					new UsernameParameter(username), Person.class);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return RestResponse.errorResponse(e);
-		}
+	public RestResponse<Person> getPerson(String username) throws IOException {
+		return restCaller.postCall(personServiceServerUrl + "/v1/person/get-person", new UsernameParameter(username),
+				Person.class);
 	}
 
-	public RestResponse<Session> signup(String username, String password) {
-		try {
-			return restCaller.postCall(personServiceServerUrl + "/v1/person/signup",
-					new UsernamePasswordParameter(username, password), Session.class);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return RestResponse.errorResponse(e);
-		}
+	public RestResponse<Session> signup(String username, String password) throws IOException {
+		return restCaller.postCall(personServiceServerUrl + "/v1/person/signup",
+				new UsernamePasswordParameter(username, password), Session.class);
 	}
 
-	public RestResponse<Session> login(String username, String password) {
-		try {
-			return restCaller.postCall(personServiceServerUrl + "/v1/person/login",
-					new UsernamePasswordParameter(username, password), Session.class);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return RestResponse.errorResponse(e);
-		}
+	public RestResponse<Session> login(String username, String password) throws IOException {
+		return restCaller.postCall(personServiceServerUrl + "/v1/person/login",
+				new UsernamePasswordParameter(username, password), Session.class);
 	}
 
-	public RestResponse<String> logout(String username) {
-		try {
-			return restCaller.postCall(personServiceServerUrl + "/v1/person/logout", new UsernameParameter(username),
-					String.class);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return RestResponse.errorResponse(e);
-		}
+	public RestResponse<String> logout(String username) throws IOException {
+		return restCaller.postCall(personServiceServerUrl + "/v1/person/logout", new UsernameParameter(username),
+				String.class);
 	}
 
-	public RestResponse<String> checkLogin(String username) {
-		try {
-			return restCaller.postCall(personServiceServerUrl + "/v1/person/check-login",
-					new UsernameParameter(username), String.class);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return RestResponse.errorResponse(e);
-		}
+	public RestResponse<String> checkLogin(String username) throws IOException {
+		return restCaller.postCall(personServiceServerUrl + "/v1/person/check-login", new UsernameParameter(username),
+				String.class);
 	}
 
-	public RestResponse<String> isUsernameAvailable(String username) {
-		try {
-			return restCaller.postCall(personServiceServerUrl + "/v1/person/username-available",
-					new UsernameParameter(username), String.class);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return RestResponse.errorResponse(e);
-		}
+	public RestResponse<String> isUsernameAvailable(String username) throws IOException {
+		return restCaller.postCall(personServiceServerUrl + "/v1/person/username-available",
+				new UsernameParameter(username), String.class);
 	}
 
-	public RestResponse<Session> getSessionFromToken(String token) {
-		try {
-			return restCaller.postCall(personServiceServerUrl + "/v1/person/get-session-from-token",
-					new TokenParameter(token), Session.class);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return RestResponse.errorResponse(e);
-		}
+	public RestResponse<Session> getSessionFromToken(String token) throws IOException {
+		return restCaller.postCall(personServiceServerUrl + "/v1/person/get-session-from-token",
+				new TokenParameter(token), Session.class);
 	}
 
 	// TODO fix this with character service
-	public RestResponse<String> createDebugPerson() {
+	public RestResponse<String> createDebugPerson() throws IOException {
 		return new RestResponse<>(HttpStatus.OK, Optional.of("THINGS DID IT"));
 	}
 
-	public RestResponse<String> validateCredentials(String username, String password) {
-		try {
-			return restCaller.postCall(personServiceServerUrl + "/v1/person/validate-credentials",
-					new UsernamePasswordParameter(username, password), String.class);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return RestResponse.errorResponse(e);
-		}
+	public RestResponse<String> validateCredentials(String username, String password) throws IOException {
+		return restCaller.postCall(personServiceServerUrl + "/v1/person/validate-credentials",
+				new UsernamePasswordParameter(username, password), String.class);
 	}
 }
