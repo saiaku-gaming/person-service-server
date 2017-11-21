@@ -12,6 +12,10 @@
 		<groupId>com.valhallagame.valhalla</groupId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
+	
+	<properties>
+		<docker.image.prefix>saiaku</docker.image.prefix>
+    </properties>
 
 	<dependencies>
 		<dependency>
@@ -76,6 +80,29 @@
 	</dependencies>
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.4.11</version>
+				<configuration>
+					<imageName>
+						${docker.image.prefix}/${project.artifactId}</imageName>
+					<forceTags>true</forceTags>
+					<imageTags>
+						<imageTag>latest</imageTag>
+					</imageTags>
+					<useConfigFile>true</useConfigFile>
+					<baseImage>frolvlad/alpine-oraclejdk8:slim</baseImage>
+					<entryPoint>["java", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
+					<resources>
+						<resource>
+							<targetPath>/</targetPath>
+							<directory>${project.build.directory}</directory>
+							<include>${project.build.finalName}.jar</include>
+						</resource>
+					</resources>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
