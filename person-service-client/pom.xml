@@ -10,6 +10,25 @@
 
 	<artifactId>person-service-client</artifactId>
 
+
+	<repositories>
+		<repository>
+			<id>myMavenRepo</id>
+			<url>${myMavenRepoReadUrl}</url>
+		</repository>
+	</repositories>
+
+	<distributionManagement>
+		<repository>
+			<id>myMavenRepo</id>
+			<url>${myMavenRepoWriteUrl}</url>
+		</repository>
+		<snapshotRepository>
+			<id>myMavenRepo</id>
+			<url>${myMavenRepoWriteUrl}</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
