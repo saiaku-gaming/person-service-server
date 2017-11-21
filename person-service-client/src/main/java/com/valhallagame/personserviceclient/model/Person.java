@@ -16,9 +16,6 @@ public class Person {
 	@JsonProperty("displayUsername")
 	private String displayUsername;
 
-	@JsonProperty("password")
-	private String password;
-
 	@JsonProperty("online")
 	private boolean online;
 
