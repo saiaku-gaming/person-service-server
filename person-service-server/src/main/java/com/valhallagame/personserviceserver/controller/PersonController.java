@@ -3,6 +3,7 @@ package com.valhallagame.personserviceserver.controller;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.valhallagame.common.JS;
+import com.valhallagame.common.rabbitmq.NotificationMessage;
+import com.valhallagame.common.rabbitmq.RabbitMQRouting;
 import com.valhallagame.personserviceserver.message.TokenParameter;
 import com.valhallagame.personserviceserver.message.UsernameParameter;
 import com.valhallagame.personserviceserver.message.UsernamePasswordParameter;
@@ -24,6 +27,9 @@ import com.valhallagame.personserviceserver.service.SessionService;
 @Controller
 @RequestMapping(path = "/v1/person")
 public class PersonController {
+
+	@Autowired
+	private RabbitTemplate rabbitTemplate;
 
 	@Autowired
 	private PersonService personService;
@@ -103,8 +109,8 @@ public class PersonController {
 			person.setDisplayUsername(input.getUsername());
 			person.setOnline(true);
 			personService.savePerson(person);
-			// TODO add notification here
-			// notificationService.notifyPartyAndFriends(person, "Online");
+			rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.ONLINE.name(),
+					new NotificationMessage(person.getUsername(), "Online"));
 			return JS.message(HttpStatus.OK, session);
 		} else {
 			return JS.message(HttpStatus.FORBIDDEN, "User not found or wrong password.");
@@ -120,16 +126,14 @@ public class PersonController {
 		}
 
 		user.setOnline(false);
-		// TODO clear the persons messages
-		// chatService.clearMessagesForPerson(user);
 		user = personService.savePerson(user);
 		Optional<Session> optSession = sessionService.getSessionFromPerson(user);
 		if (optSession.isPresent()) {
 			sessionService.deleteSession(optSession.get());
 		}
 
-		// TODO notify that the person has gone offline
-		// notificationService.notifyPartyAndFriends(user, "Offline");
+		rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.OFFLINE.name(),
+				new NotificationMessage(input.getUsername(), "Offline"));
 		return JS.message(HttpStatus.OK, "Logged out");
 	}
 
@@ -185,5 +189,20 @@ public class PersonController {
 		} else {
 			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with that username/password combination");
 		}
+	}
+
+	@RequestMapping(path = "/delete-person", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<?> deletePerson(@RequestBody UsernameParameter input) {
+		Optional<Person> optPerson = personService.getPerson(input.getUsername());
+		if (!optPerson.isPresent()) {
+			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with that username/password combination");
+		}
+
+		personService.deletePerson(optPerson.get());
+		rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.DELETE.name(),
+				input.getUsername());
+
+		return JS.message(HttpStatus.OK, "credentials valid");
 	}
 }

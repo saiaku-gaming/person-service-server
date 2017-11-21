@@ -17,6 +17,10 @@ public class PersonService {
 		return personRepository.save(person);
 	}
 
+	public void deletePerson(Person person) {
+		personRepository.delete(person);
+	}
+
 	public Optional<Person> getPerson(String username) {
 		return personRepository.findByUsername(username);
 	}
