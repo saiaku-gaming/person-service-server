@@ -10,7 +10,6 @@
 
 	<artifactId>person-service-client</artifactId>
 
-
 	<repositories>
 		<repository>
 			<id>myMavenRepo</id>
