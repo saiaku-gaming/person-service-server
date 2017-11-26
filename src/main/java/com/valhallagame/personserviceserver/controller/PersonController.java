@@ -1,5 +1,6 @@
 package com.valhallagame.personserviceserver.controller;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -204,5 +205,18 @@ public class PersonController {
 				input.getUsername());
 
 		return JS.message(HttpStatus.OK, "credentials valid");
+	}
+
+	@RequestMapping(path = "/create-debug-person", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<?> createDebugPerson(@RequestBody TokenParameter input) {
+		Person debugPerson = personService.createNewDebugPerson();
+
+		rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.CREATE.name(),
+				debugPerson.getUsername());
+
+		Session debugSession = sessionService.saveSession(new Session(input.getToken(), Instant.now(), debugPerson));
+
+		return JS.message(HttpStatus.OK, debugSession);
 	}
 }
