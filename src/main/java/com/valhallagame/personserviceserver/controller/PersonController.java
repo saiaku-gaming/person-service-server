@@ -219,4 +219,19 @@ public class PersonController {
 
 		return JS.message(HttpStatus.OK, debugSession);
 	}
+
+	@RequestMapping(path = "/heartbeat", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<?> heartbeat(@RequestBody UsernameParameter input) {
+		Optional<Person> optPerson = personService.getPerson(input.getUsername());
+		if (!optPerson.isPresent()) {
+			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with that username/password combination");
+		}
+
+		Person person = optPerson.get();
+		person.setLastHeartbeat(Instant.now());
+		personService.savePerson(person);
+
+		return JS.message(HttpStatus.OK, "heartbeaten");
+	}
 }
