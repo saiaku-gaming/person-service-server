@@ -1,9 +1,11 @@
 package com.valhallagame.personserviceserver.service;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.assertj.core.util.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -73,5 +75,9 @@ public class PersonService {
 		ObjectNode name = (ObjectNode) user.get("name");
 		ValueNode first = (ValueNode) name.get("first");
 		return first.textValue();
+	}
+
+	public List<Person> getOnlinePersons() {
+		return personRepository.findByOnline(true);
 	}
 }

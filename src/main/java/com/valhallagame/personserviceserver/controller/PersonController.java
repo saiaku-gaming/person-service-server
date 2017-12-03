@@ -1,6 +1,7 @@
 package com.valhallagame.personserviceserver.controller;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,6 +39,13 @@ public class PersonController {
 	@Autowired
 	private SessionService sessionService;
 
+	@RequestMapping(path = "/online-persons", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<?> onlinePersons() {
+		List<Person> persons = personService.getOnlinePersons();
+		return JS.message(HttpStatus.OK, persons);
+	}
+	
 	@RequestMapping(path = "/get-person", method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<?> getPerson(@RequestBody UsernameParameter username) {
