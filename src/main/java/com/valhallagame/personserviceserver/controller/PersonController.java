@@ -52,7 +52,6 @@ public class PersonController {
 	@RequestMapping(path = "/signup", method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<?> signup(@RequestBody UsernamePasswordParameter input) {
-
 		if (input == null) {
 			return JS.message(HttpStatus.BAD_REQUEST, "Empty input.");
 		} else if (input.getUsername() == null) {
@@ -61,7 +60,7 @@ public class PersonController {
 			return JS.message(HttpStatus.BAD_REQUEST, "Empty password input.");
 		}
 
-		Optional<Person> dbUserOpt = personService.getPerson(input.getUsername());
+		Optional<Person> dbUserOpt = personService.getPerson(input.getUsername().toLowerCase());
 		if (dbUserOpt.isPresent()) {
 			return JS.message(HttpStatus.CONFLICT, "Username already taken.");
 		} else {
@@ -89,7 +88,7 @@ public class PersonController {
 			return JS.message(HttpStatus.BAD_REQUEST, "Empty password input.");
 		}
 
-		Optional<Person> personOpt = personService.getPerson(input.getUsername());
+		Optional<Person> personOpt = personService.getPerson(input.getUsername().toLowerCase());
 
 		if (!personOpt.isPresent()) {
 			return JS.message(HttpStatus.NOT_FOUND, "Could not find person with username: " + input.getUsername());
