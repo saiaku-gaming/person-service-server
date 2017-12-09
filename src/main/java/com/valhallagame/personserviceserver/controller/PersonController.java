@@ -1,6 +1,7 @@
 package com.valhallagame.personserviceserver.controller;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,6 +39,13 @@ public class PersonController {
 	@Autowired
 	private SessionService sessionService;
 
+	@RequestMapping(path = "/online-persons", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<?> onlinePersons() {
+		List<Person> persons = personService.getOnlinePersons();
+		return JS.message(HttpStatus.OK, persons);
+	}
+	
 	@RequestMapping(path = "/get-person", method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<?> getPerson(@RequestBody UsernameParameter username) {
@@ -52,7 +60,6 @@ public class PersonController {
 	@RequestMapping(path = "/signup", method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<?> signup(@RequestBody UsernamePasswordParameter input) {
-
 		if (input == null) {
 			return JS.message(HttpStatus.BAD_REQUEST, "Empty input.");
 		} else if (input.getUsername() == null) {
@@ -61,7 +68,7 @@ public class PersonController {
 			return JS.message(HttpStatus.BAD_REQUEST, "Empty password input.");
 		}
 
-		Optional<Person> dbUserOpt = personService.getPerson(input.getUsername());
+		Optional<Person> dbUserOpt = personService.getPerson(input.getUsername().toLowerCase());
 		if (dbUserOpt.isPresent()) {
 			return JS.message(HttpStatus.CONFLICT, "Username already taken.");
 		} else {
@@ -89,7 +96,7 @@ public class PersonController {
 			return JS.message(HttpStatus.BAD_REQUEST, "Empty password input.");
 		}
 
-		Optional<Person> personOpt = personService.getPerson(input.getUsername());
+		Optional<Person> personOpt = personService.getPerson(input.getUsername().toLowerCase());
 
 		if (!personOpt.isPresent()) {
 			return JS.message(HttpStatus.NOT_FOUND, "Could not find person with username: " + input.getUsername());
