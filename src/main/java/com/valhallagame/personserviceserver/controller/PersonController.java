@@ -202,7 +202,7 @@ public class PersonController {
 
 		personService.deletePerson(optPerson.get());
 		rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.DELETE.name(),
-				input.getUsername());
+				new NotificationMessage(input.getUsername(), "deleted person"));
 
 		return JS.message(HttpStatus.OK, "credentials valid");
 	}
@@ -213,7 +213,7 @@ public class PersonController {
 		Person debugPerson = personService.createNewDebugPerson();
 
 		rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.CREATE.name(),
-				debugPerson.getUsername());
+				new NotificationMessage(debugPerson.getUsername(), "created debug person"));
 
 		Session debugSession = sessionService.saveSession(new Session(input.getToken(), Instant.now(), debugPerson));
 
