@@ -66,6 +66,8 @@ public class PersonController {
 			return JS.message(HttpStatus.BAD_REQUEST, "Empty username input.");
 		} else if (input.getPassword() == null) {
 			return JS.message(HttpStatus.BAD_REQUEST, "Empty password input.");
+		} else if (input.getUsername().contains("#")) {
+			return JS.message(HttpStatus.BAD_REQUEST, "# is not allowed in username");
 		}
 
 		Optional<Person> dbUserOpt = personService.getPerson(input.getUsername().toLowerCase());
