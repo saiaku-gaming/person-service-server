@@ -50,6 +50,7 @@ public class PersonService {
 		Person person;
 		if (!personOpt.isPresent()) {
 			person = new Person(name, sha1HexPass);
+			person.setOnline(true);
 			personRepository.save(person);
 		} else {
 			person = personOpt.get();
