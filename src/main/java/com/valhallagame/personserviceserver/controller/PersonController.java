@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.validation.Valid;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,9 +21,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.valhallagame.common.JS;
 import com.valhallagame.common.rabbitmq.NotificationMessage;
 import com.valhallagame.common.rabbitmq.RabbitMQRouting;
-import com.valhallagame.personserviceserver.message.TokenParameter;
-import com.valhallagame.personserviceserver.message.UsernameParameter;
-import com.valhallagame.personserviceserver.message.UsernamePasswordParameter;
+import com.valhallagame.personserviceclient.message.TokenParameter;
+import com.valhallagame.personserviceclient.message.UsernameParameter;
+import com.valhallagame.personserviceclient.message.UsernamePasswordParameter;
 import com.valhallagame.personserviceserver.model.Person;
 import com.valhallagame.personserviceserver.model.Session;
 import com.valhallagame.personserviceserver.service.PersonService;
@@ -51,7 +53,7 @@ public class PersonController {
 	
 	@RequestMapping(path = "/get-person", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<JsonNode> getPerson(@RequestBody UsernameParameter username) {
+	public ResponseEntity<JsonNode> getPerson(@Valid @RequestBody UsernameParameter username) {
 		Optional<Person> optPerson = personService.getPerson(username.getUsername());
 		if (!optPerson.isPresent()) {
 			return JS.message(HttpStatus.NOT_FOUND, "No person with that username was found!");
@@ -62,7 +64,7 @@ public class PersonController {
 
 	@RequestMapping(path = "/signup", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<JsonNode> signup(@RequestBody UsernamePasswordParameter input) {
+	public ResponseEntity<JsonNode> signup(@Valid @RequestBody UsernamePasswordParameter input) {
 		if (input == null) {
 			return JS.message(HttpStatus.BAD_REQUEST, "Empty input.");
 		} else if (input.getUsername() == null) {
@@ -92,7 +94,7 @@ public class PersonController {
 
 	@RequestMapping(path = "/login", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<JsonNode> login(@RequestBody UsernamePasswordParameter input) {
+	public ResponseEntity<JsonNode> login(@Valid @RequestBody UsernamePasswordParameter input) {
 		if (input == null) {
 			return JS.message(HttpStatus.BAD_REQUEST, "Empty input.");
 		} else if (input.getUsername() == null) {
@@ -132,7 +134,7 @@ public class PersonController {
 
 	@RequestMapping(path = "/logout", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<JsonNode> logout(@RequestBody UsernameParameter input) {
+	public ResponseEntity<JsonNode> logout(@Valid @RequestBody UsernameParameter input) {
 		Person user = personService.getPerson(input.getUsername()).orElse(null);
 		if (user == null) {
 			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with username: " + input.getUsername());
@@ -152,7 +154,7 @@ public class PersonController {
 
 	@RequestMapping(path = "/check-login", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<JsonNode> checkLogin(@RequestBody UsernameParameter input) {
+	public ResponseEntity<JsonNode> checkLogin(@Valid @RequestBody UsernameParameter input) {
 		Person user = personService.getPerson(input.getUsername()).orElse(null);
 		if (user == null) {
 			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with username: " + input.getUsername());
@@ -167,7 +169,7 @@ public class PersonController {
 
 	@RequestMapping(path = "/username-available", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<JsonNode> userAvaliable(@RequestBody UsernameParameter input) {
+	public ResponseEntity<JsonNode> userAvaliable(@Valid @RequestBody UsernameParameter input) {
 		if (input.getUsername().length() > 30) {
 			return JS.message(HttpStatus.CONFLICT, "Username too long.");
 		}
@@ -181,7 +183,7 @@ public class PersonController {
 
 	@RequestMapping(path = "/get-session-from-token", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<JsonNode> getSessionFromToken(@RequestBody TokenParameter input) {
+	public ResponseEntity<JsonNode> getSessionFromToken(@Valid @RequestBody TokenParameter input) {
 		Optional<Session> optSession = sessionService.getSessionFromId(input.getToken());
 		if (optSession.isPresent()) {
 			return JS.message(HttpStatus.OK, optSession.get());
@@ -192,7 +194,7 @@ public class PersonController {
 
 	@RequestMapping(path = "/validate-credentials", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<JsonNode> validateCredentials(@RequestBody UsernamePasswordParameter input) {
+	public ResponseEntity<JsonNode> validateCredentials(@Valid @RequestBody UsernamePasswordParameter input) {
 		Optional<Person> optPerson = personService.getPerson(input.getUsername());
 		if (!optPerson.isPresent()) {
 			return JS.message(HttpStatus.NOT_FOUND, NOT_FOUND);
@@ -206,7 +208,7 @@ public class PersonController {
 
 	@RequestMapping(path = "/delete-person", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<JsonNode> deletePerson(@RequestBody UsernameParameter input) {
+	public ResponseEntity<JsonNode> deletePerson(@Valid @RequestBody UsernameParameter input) {
 		Optional<Person> optPerson = personService.getPerson(input.getUsername());
 		if (!optPerson.isPresent()) {
 			return JS.message(HttpStatus.NOT_FOUND, NOT_FOUND);
@@ -221,7 +223,7 @@ public class PersonController {
 
 	@RequestMapping(path = "/create-debug-person", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<JsonNode> createDebugPerson(@RequestBody TokenParameter input) {
+	public ResponseEntity<JsonNode> createDebugPerson(@Valid @RequestBody TokenParameter input) {
 		Person debugPerson = personService.createNewDebugPerson();
 
 		rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.CREATE.name(),
@@ -234,7 +236,7 @@ public class PersonController {
 
 	@RequestMapping(path = "/heartbeat", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<JsonNode> heartbeat(@RequestBody UsernameParameter input) {
+	public ResponseEntity<JsonNode> heartbeat(@Valid @RequestBody UsernameParameter input) {
 		Optional<Person> optPerson = personService.getPerson(input.getUsername());
 		if (!optPerson.isPresent()) {
 			return JS.message(HttpStatus.NOT_FOUND, NOT_FOUND);
