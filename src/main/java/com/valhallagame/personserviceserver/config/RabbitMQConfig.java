@@ -22,7 +22,7 @@ public class RabbitMQConfig {
 	}
 	
 	@Bean
-	public SimpleRabbitListenerContainerFactory ContainerFactory() {
+	public SimpleRabbitListenerContainerFactory containerFactory() {
 		SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
 		factory.setMessageConverter(jacksonConverter());
 		return factory;

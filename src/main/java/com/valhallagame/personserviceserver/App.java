@@ -15,9 +15,7 @@ public class App {
 	}
 
 	@Bean
-    public EmbeddedServletContainerCustomizer containerCustomizer() {
-        return (container -> {
-            container.setPort(DefaultServicePortMappings.PERSON_SERVICE_PORT);
-        });
-    }
+	public EmbeddedServletContainerCustomizer containerCustomizer() {
+		return (container -> container.setPort(DefaultServicePortMappings.PERSON_SERVICE_PORT));
+	}
 }
