@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.valhallagame.common.JS;
 import com.valhallagame.common.rabbitmq.NotificationMessage;
 import com.valhallagame.common.rabbitmq.RabbitMQRouting;
@@ -30,6 +31,8 @@ import com.valhallagame.personserviceserver.service.SessionService;
 @RequestMapping(path = "/v1/person")
 public class PersonController {
 
+	private static final String NOT_FOUND = "Unable to find a user with that username/password combination";
+
 	@Autowired
 	private RabbitTemplate rabbitTemplate;
 
@@ -41,14 +44,14 @@ public class PersonController {
 
 	@RequestMapping(path = "/online-persons", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> onlinePersons() {
+	public ResponseEntity<JsonNode> onlinePersons() {
 		List<Person> persons = personService.getOnlinePersons();
 		return JS.message(HttpStatus.OK, persons);
 	}
 	
 	@RequestMapping(path = "/get-person", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> getPerson(@RequestBody UsernameParameter username) {
+	public ResponseEntity<JsonNode> getPerson(@RequestBody UsernameParameter username) {
 		Optional<Person> optPerson = personService.getPerson(username.getUsername());
 		if (!optPerson.isPresent()) {
 			return JS.message(HttpStatus.NOT_FOUND, "No person with that username was found!");
@@ -59,7 +62,7 @@ public class PersonController {
 
 	@RequestMapping(path = "/signup", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> signup(@RequestBody UsernamePasswordParameter input) {
+	public ResponseEntity<JsonNode> signup(@RequestBody UsernamePasswordParameter input) {
 		if (input == null) {
 			return JS.message(HttpStatus.BAD_REQUEST, "Empty input.");
 		} else if (input.getUsername() == null) {
@@ -89,12 +92,12 @@ public class PersonController {
 
 	@RequestMapping(path = "/login", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> login(@RequestBody UsernamePasswordParameter input) {
+	public ResponseEntity<JsonNode> login(@RequestBody UsernamePasswordParameter input) {
 		if (input == null) {
 			return JS.message(HttpStatus.BAD_REQUEST, "Empty input.");
 		} else if (input.getUsername() == null) {
 			return JS.message(HttpStatus.BAD_REQUEST, "Empty username input.");
-		} else if (input.getUsername() == null) {
+		} else if (input.getPassword() == null) {
 			return JS.message(HttpStatus.BAD_REQUEST, "Empty password input.");
 		}
 
@@ -129,7 +132,7 @@ public class PersonController {
 
 	@RequestMapping(path = "/logout", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> logout(@RequestBody UsernameParameter input) {
+	public ResponseEntity<JsonNode> logout(@RequestBody UsernameParameter input) {
 		Person user = personService.getPerson(input.getUsername()).orElse(null);
 		if (user == null) {
 			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with username: " + input.getUsername());
@@ -149,7 +152,7 @@ public class PersonController {
 
 	@RequestMapping(path = "/check-login", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> checkLogin(@RequestBody UsernameParameter input) {
+	public ResponseEntity<JsonNode> checkLogin(@RequestBody UsernameParameter input) {
 		Person user = personService.getPerson(input.getUsername()).orElse(null);
 		if (user == null) {
 			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with username: " + input.getUsername());
@@ -164,7 +167,7 @@ public class PersonController {
 
 	@RequestMapping(path = "/username-available", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> userAvaliable(@RequestBody UsernameParameter input) {
+	public ResponseEntity<JsonNode> userAvaliable(@RequestBody UsernameParameter input) {
 		if (input.getUsername().length() > 30) {
 			return JS.message(HttpStatus.CONFLICT, "Username too long.");
 		}
@@ -178,7 +181,7 @@ public class PersonController {
 
 	@RequestMapping(path = "/get-session-from-token", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> getSessionFromToken(@RequestBody TokenParameter input) {
+	public ResponseEntity<JsonNode> getSessionFromToken(@RequestBody TokenParameter input) {
 		Optional<Session> optSession = sessionService.getSessionFromId(input.getToken());
 		if (optSession.isPresent()) {
 			return JS.message(HttpStatus.OK, optSession.get());
@@ -189,24 +192,24 @@ public class PersonController {
 
 	@RequestMapping(path = "/validate-credentials", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> validateCredentials(@RequestBody UsernamePasswordParameter input) {
+	public ResponseEntity<JsonNode> validateCredentials(@RequestBody UsernamePasswordParameter input) {
 		Optional<Person> optPerson = personService.getPerson(input.getUsername());
 		if (!optPerson.isPresent()) {
-			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with that username/password combination");
+			return JS.message(HttpStatus.NOT_FOUND, NOT_FOUND);
 		}
 		if (optPerson.get().validatePassword(input.getPassword())) {
 			return JS.message(HttpStatus.OK, "credentials valid");
 		} else {
-			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with that username/password combination");
+			return JS.message(HttpStatus.NOT_FOUND, NOT_FOUND);
 		}
 	}
 
 	@RequestMapping(path = "/delete-person", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> deletePerson(@RequestBody UsernameParameter input) {
+	public ResponseEntity<JsonNode> deletePerson(@RequestBody UsernameParameter input) {
 		Optional<Person> optPerson = personService.getPerson(input.getUsername());
 		if (!optPerson.isPresent()) {
-			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with that username/password combination");
+			return JS.message(HttpStatus.NOT_FOUND, NOT_FOUND);
 		}
 
 		personService.deletePerson(optPerson.get());
@@ -218,7 +221,7 @@ public class PersonController {
 
 	@RequestMapping(path = "/create-debug-person", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> createDebugPerson(@RequestBody TokenParameter input) {
+	public ResponseEntity<JsonNode> createDebugPerson(@RequestBody TokenParameter input) {
 		Person debugPerson = personService.createNewDebugPerson();
 
 		rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.CREATE.name(),
@@ -231,10 +234,10 @@ public class PersonController {
 
 	@RequestMapping(path = "/heartbeat", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> heartbeat(@RequestBody UsernameParameter input) {
+	public ResponseEntity<JsonNode> heartbeat(@RequestBody UsernameParameter input) {
 		Optional<Person> optPerson = personService.getPerson(input.getUsername());
 		if (!optPerson.isPresent()) {
-			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with that username/password combination");
+			return JS.message(HttpStatus.NOT_FOUND, NOT_FOUND);
 		}
 
 		Person person = optPerson.get();
