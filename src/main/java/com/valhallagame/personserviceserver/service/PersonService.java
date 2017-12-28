@@ -3,6 +3,7 @@ package com.valhallagame.personserviceserver.service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
@@ -45,11 +46,16 @@ public class PersonService {
 	public Person createNewDebugPerson() {
 		String name = "I am broken. Please fix!";
 		try {
-			name = "debug-" + getRandomName();
+			name = "debug-ÅÄÖ-" + getRandomName();
 		} catch (IOException e) {
 			logger.error("Could not get a random name", e);
 		}
-
+		
+		name = name.chars()
+			.mapToObj(c -> String.valueOf((char) c))
+			.map(c -> Math.random() < 0.5 ? c.toUpperCase() : c.toLowerCase())
+			.collect(Collectors.joining());
+		
 		String sha1HexPass = DigestUtils.sha1Hex("debug").toUpperCase();
 		Optional<Person> personOpt = getPerson(name);
 		Person person;
