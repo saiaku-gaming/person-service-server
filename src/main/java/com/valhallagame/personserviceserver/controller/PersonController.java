@@ -50,7 +50,7 @@ public class PersonController {
 		List<Person> persons = personService.getOnlinePersons();
 		return JS.message(HttpStatus.OK, persons);
 	}
-	
+
 	@RequestMapping(path = "/get-person", method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<JsonNode> getPerson(@Valid @RequestBody UsernameParameter username) {
