@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <logger name="com.valhallagame" level="DEBUG"/>
+    
+    <appender name="GELF" class="de.siegmar.logbackgelf.GelfUdpAppender">
+        <graylogHost>graylog.valhalla-game.com</graylogHost>
+        <graylogPort>12201</graylogPort>
+    </appender>
+
+    <root level="debug">
+        <appender-ref ref="GELF" />
+    </root>
+    
+</configuration>
