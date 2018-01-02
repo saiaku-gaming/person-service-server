@@ -9,7 +9,7 @@
         <graylogPort>12201</graylogPort>
     </appender>
 
-    <root level="debug">
+    <root level="INFO">
         <appender-ref ref="GELF" />
     </root>
     
