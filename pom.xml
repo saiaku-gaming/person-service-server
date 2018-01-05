@@ -16,13 +16,6 @@
 		<version>1.5.8.RELEASE</version>
 	</parent>
 
-	<repositories>
-		<repository>
-			<id>myMavenRepo</id>
-			<url>${myMavenRepoReadUrl}</url>
-		</repository>
-	</repositories>
-
 	<properties>
 		<docker.image.prefix>saiaku</docker.image.prefix>
 	</properties>
