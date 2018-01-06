@@ -231,6 +231,9 @@ public class PersonController {
 
 		Session debugSession = sessionService.saveSession(new Session(input.getToken(), Instant.now(), debugPerson));
 
+		rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.ONLINE.name(),
+				new NotificationMessage(debugPerson.getUsername(), "Online"));
+		
 		return JS.message(HttpStatus.OK, debugSession);
 	}
 
