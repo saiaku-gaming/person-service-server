@@ -105,7 +105,7 @@
 				<version>1.0.0</version>
 				<configuration>
 					<imageName>
-						registry.taskify.se/${docker.image.prefix}/${project.artifactId}</imageName>
+						registry.valhalla-game.com/${docker.image.prefix}/${project.artifactId}</imageName>
 					<forceTags>true</forceTags>
 					<imageTags>
 						<imageTag>latest</imageTag>
