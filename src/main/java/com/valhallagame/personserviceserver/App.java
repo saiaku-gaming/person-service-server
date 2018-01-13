@@ -21,7 +21,9 @@ public class App {
 
 	public static void main(String[] args) {
 		if (args.length > 0) {
-			logger.info("Args passed in: " + Arrays.asList(args).toString());
+			if(logger.isInfoEnabled()) {
+				logger.info("Args passed in: {}",  Arrays.asList(args).toString());
+			}
 			// override system properties with local properties
 
 			for (String arg : args) {
