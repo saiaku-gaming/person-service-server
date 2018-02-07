@@ -112,7 +112,7 @@
 					</imageTags>
 					<useConfigFile>true</useConfigFile>
 					<baseImage>frolvlad/alpine-oraclejdk8:slim</baseImage>
-					<entryPoint>["java", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
+					<entryPoint>["java", "-Xmx256m", "-Xss512k", "-Xms32m", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
 					<resources>
 						<resource>
 							<targetPath>/</targetPath>
