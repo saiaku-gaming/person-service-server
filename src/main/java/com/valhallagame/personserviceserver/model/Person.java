@@ -46,9 +46,9 @@ public class Person {
 	@Basic
 	private Instant lastHeartbeat;
 
-	public Person(String username, String plaintextPassword) {
-		this.setUsername(username.toLowerCase());
-		this.setDisplayUsername(username);
+	public Person(String displayUsername, String plaintextPassword) {
+		this.setUsername(displayUsername.toLowerCase());
+		this.setDisplayUsername(displayUsername);
 		this.password = BCrypt.hashpw(plaintextPassword, BCrypt.gensalt());
 		this.lastHeartbeat = Instant.now();
 	}

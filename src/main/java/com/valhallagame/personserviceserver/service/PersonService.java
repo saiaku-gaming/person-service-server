@@ -44,23 +44,23 @@ public class PersonService {
 	}
 
 	public Person createNewDebugPerson() {
-		String name = "I am broken. Please fix!";
+		String displayUsername = "I am broken. Please fix!";
 		try {
-			name = "debug-ÅÄÖ-" + getRandomName();
+			displayUsername = "debug-ÅÄÖ-" + getRandomName();
 		} catch (IOException e) {
 			logger.error("Could not get a random name", e);
 		}
 		
-		name = name.chars()
+		displayUsername = displayUsername.chars()
 			.mapToObj(c -> String.valueOf((char) c))
 			.map(c -> Math.random() < 0.5 ? c.toUpperCase() : c.toLowerCase())
 			.collect(Collectors.joining());
 		
 		String sha1HexPass = DigestUtils.sha1Hex("debug").toUpperCase();
-		Optional<Person> personOpt = getPerson(name);
+		Optional<Person> personOpt = getPerson(displayUsername.toLowerCase());
 		Person person;
 		if (!personOpt.isPresent()) {
-			person = new Person(name, sha1HexPass);
+			person = new Person(displayUsername, sha1HexPass);
 			person.setOnline(true);
 			personRepository.save(person);
 		} else {
