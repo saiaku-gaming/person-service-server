@@ -25,9 +25,9 @@ import okhttp3.Response;
 
 @Service
 public class PersonService {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(PersonService.class);
-	
+
 	@Autowired
 	private PersonRepository personRepository;
 
@@ -50,12 +50,12 @@ public class PersonService {
 		} catch (IOException e) {
 			logger.error("Could not get a random name", e);
 		}
-		
+
 		displayUsername = displayUsername.chars()
-			.mapToObj(c -> String.valueOf((char) c))
-			.map(c -> Math.random() < 0.5 ? c.toUpperCase() : c.toLowerCase())
-			.collect(Collectors.joining());
-		
+				.mapToObj(c -> String.valueOf((char) c))
+				.map(c -> Math.random() < 0.5 ? c.toUpperCase() : c.toLowerCase())
+				.collect(Collectors.joining());
+
 		String sha1HexPass = DigestUtils.sha1Hex("debug").toUpperCase();
 		Optional<Person> personOpt = getPerson(displayUsername.toLowerCase());
 		Person person;
