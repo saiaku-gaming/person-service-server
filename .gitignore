@@ -25,3 +25,10 @@ hs_err_pid*
 .factorypath
 .project
 .settings/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+/out/
