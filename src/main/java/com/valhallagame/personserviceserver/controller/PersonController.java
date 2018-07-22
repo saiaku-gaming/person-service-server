@@ -1,12 +1,14 @@
 package com.valhallagame.personserviceserver.controller;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.validation.Valid;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.valhallagame.common.JS;
+import com.valhallagame.common.rabbitmq.NotificationMessage;
+import com.valhallagame.common.rabbitmq.RabbitMQRouting;
+import com.valhallagame.personserviceclient.message.*;
+import com.valhallagame.personserviceserver.model.Person;
+import com.valhallagame.personserviceserver.model.Session;
+import com.valhallagame.personserviceserver.service.PersonService;
+import com.valhallagame.personserviceserver.service.SessionService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,25 +19,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.valhallagame.common.JS;
-import com.valhallagame.common.rabbitmq.NotificationMessage;
-import com.valhallagame.common.rabbitmq.RabbitMQRouting;
-import com.valhallagame.personserviceclient.message.CheckLoginParameter;
-import com.valhallagame.personserviceclient.message.CreateDebugPersonParameter;
-import com.valhallagame.personserviceclient.message.DeletePersonParameter;
-import com.valhallagame.personserviceclient.message.GetPersonParameter;
-import com.valhallagame.personserviceclient.message.GetSessionFromTokenParameter;
-import com.valhallagame.personserviceclient.message.HeartbeatParameter;
-import com.valhallagame.personserviceclient.message.LoginParameter;
-import com.valhallagame.personserviceclient.message.LogoutParameter;
-import com.valhallagame.personserviceclient.message.SignupParameter;
-import com.valhallagame.personserviceclient.message.UsernameAvailableParameter;
-import com.valhallagame.personserviceclient.message.ValidateCredentialsParameter;
-import com.valhallagame.personserviceserver.model.Person;
-import com.valhallagame.personserviceserver.model.Session;
-import com.valhallagame.personserviceserver.service.PersonService;
-import com.valhallagame.personserviceserver.service.SessionService;
+import javax.validation.Valid;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Controller
 @RequestMapping(path = "/v1/person")
@@ -218,7 +206,7 @@ public class PersonController {
 	@RequestMapping(path = "/create-debug-person", method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<JsonNode> createDebugPerson(@Valid @RequestBody CreateDebugPersonParameter input) {
-		Person debugPerson = personService.createNewDebugPerson();
+		Person debugPerson = personService.createNewDebugPerson(input.getSingleton());
 
 		rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.CREATE.name(),
 				new NotificationMessage(debugPerson.getUsername(), "created debug person"));

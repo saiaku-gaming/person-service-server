@@ -1,16 +1,5 @@
 package com.valhallagame.personserviceserver.service;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.apache.commons.codec.digest.DigestUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -18,15 +7,28 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
 import com.valhallagame.personserviceserver.model.Person;
 import com.valhallagame.personserviceserver.repository.PersonRepository;
-
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 @Service
 public class PersonService {
 
 	private static final Logger logger = LoggerFactory.getLogger(PersonService.class);
+
+	private ConcurrentMap<String, String> singletonPersons = new ConcurrentHashMap<>();
 
 	@Autowired
 	private PersonRepository personRepository;
@@ -43,18 +45,26 @@ public class PersonService {
 		return personRepository.findByUsername(username);
 	}
 
-	public Person createNewDebugPerson() {
-		String displayUsername = "I am broken. Please fix!";
-		try {
-			displayUsername = "debug-ÅÄÖ-" + getRandomName();
-		} catch (IOException e) {
-			logger.error("Could not get a random name", e);
-		}
+	public Person createNewDebugPerson(String singleton) {
+		String displayUsername = singleton != null ? singletonPersons.get(singleton) : null;
 
-		displayUsername = displayUsername.chars()
-				.mapToObj(c -> String.valueOf((char) c))
-				.map(c -> Math.random() < 0.5 ? c.toUpperCase() : c.toLowerCase())
-				.collect(Collectors.joining());
+		if(displayUsername == null) {
+			displayUsername = "I am broken. Please fix!";
+			try {
+				displayUsername = "debug-ÅÄÖ-" + getRandomName();
+			} catch (IOException e) {
+				logger.error("Could not get a random name", e);
+			}
+
+			displayUsername = displayUsername.chars()
+					.mapToObj(c -> String.valueOf((char) c))
+					.map(c -> Math.random() < 0.5 ? c.toUpperCase() : c.toLowerCase())
+					.collect(Collectors.joining());
+
+			if(singleton != null) {
+				singletonPersons.put(singleton, displayUsername);
+			}
+		}
 
 		String sha1HexPass = DigestUtils.sha1Hex("debug").toUpperCase();
 		Optional<Person> personOpt = getPerson(displayUsername.toLowerCase());
