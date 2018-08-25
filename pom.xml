@@ -20,6 +20,17 @@
 		<docker.image.prefix>saiaku</docker.image.prefix>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>valhalla-release</id>
+			<url>https://artifactory.valhalla-game.com/libs-release</url>
+		</repository>
+		<repository>
+			<id>valhalla-snapshot</id>
+			<url>https://artifactory.valhalla-game.com/libs-snapshot</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
