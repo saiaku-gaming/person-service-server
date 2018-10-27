@@ -1,10 +1,5 @@
 package com.valhallagame.personserviceserver;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-
 import com.valhallagame.common.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,13 +11,13 @@ import org.springframework.context.annotation.Bean;
 import com.valhallagame.common.DefaultServicePortMappings;
 
 @SpringBootApplication
-public class App {
+public class PersonApp {
 
-	private static final Logger logger = LoggerFactory.getLogger(App.class);
+	private static final Logger logger = LoggerFactory.getLogger(PersonApp.class);
 
 	public static void main(String[] args) {
 		Properties.load(args, logger);
-		SpringApplication.run(App.class, args);
+		SpringApplication.run(PersonApp.class, args);
 	}
 
 	@Bean
