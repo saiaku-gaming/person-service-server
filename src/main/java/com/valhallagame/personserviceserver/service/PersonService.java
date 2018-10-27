@@ -66,14 +66,14 @@ public class PersonService {
 		if(displayUsername == null) {
 			displayUsername = "I am broken. Please fix!";
 			try {
-				displayUsername = "debug-ÅÄÖ-" + getRandomName();
+                displayUsername = "debug-" + getRandomName();
 			} catch (IOException e) {
 				logger.error("Could not get a random name", e);
 			}
 
 			displayUsername = displayUsername.chars()
 					.mapToObj(c -> String.valueOf((char) c))
-					.map(c -> Math.random() < 0.5 ? c.toUpperCase() : c.toLowerCase())
+                    .map(c -> Math.random() < 0.1 ? c.toUpperCase() : c.toLowerCase())
 					.collect(Collectors.joining());
 
 			if(singleton != null) {

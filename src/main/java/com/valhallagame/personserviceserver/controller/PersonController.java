@@ -211,6 +211,11 @@ public class PersonController {
 		rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.CREATE.name(),
 				new NotificationMessage(debugPerson.getUsername(), "created debug person"));
 
+		Optional<Session> optSession = sessionService.getSessionFromPerson(debugPerson);
+		if (optSession.isPresent()) {
+			sessionService.deleteSession(optSession.get());
+		}
+
 		Session debugSession = sessionService.saveSession(new Session(input.getToken(), Instant.now(), debugPerson));
 
 		rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.ONLINE.name(),
