@@ -88,10 +88,12 @@ public class PersonService {
 			person = new Person(displayUsername, sha1HexPass);
 			person.setOnline(true);
 			personRepository.save(person);
-			debugPersons.put(person.getUsername(), Instant.now());
 		} else {
 			person = personOpt.get();
 		}
+
+		debugPersons.put(person.getUsername(), Instant.now());
+
 		return person;
 	}
 
