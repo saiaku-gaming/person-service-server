@@ -120,7 +120,8 @@ public class PersonService {
 
 	public void deleteOldDebugPersons() {
 		for(Map.Entry<String, Instant> entry : debugPersons.entrySet()) {
-			if(entry.getValue().plus(1, ChronoUnit.HOURS).isBefore(Instant.now())) {
+			if(singletonPersons.values().stream().noneMatch(du -> du.toLowerCase().equals(entry.getKey())) &&
+					entry.getValue().plus(1, ChronoUnit.HOURS).isBefore(Instant.now())) {
 				deletePerson(entry.getKey());
 
 				rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.DELETE.name(),
