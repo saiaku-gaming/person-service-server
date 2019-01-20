@@ -1,5 +1,6 @@
 package com.valhallagame.personserviceserver;
 
+import com.valhallagame.common.DefaultServicePortMappings;
 import com.valhallagame.common.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,9 +8,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
-import com.valhallagame.common.DefaultServicePortMappings;
-
+@EnableScheduling
 @SpringBootApplication
 public class PersonApp {
 
