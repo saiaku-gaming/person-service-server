@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -121,14 +122,20 @@ public class PersonService {
 	}
 
 	public void deleteOldDebugPersons() {
+		List<String> keysToRemove = new ArrayList<>();
 		for(Map.Entry<String, Instant> entry : debugPersons.entrySet()) {
 			if(singletonPersons.values().stream().noneMatch(du -> du.toLowerCase().equals(entry.getKey())) &&
 					entry.getValue().plus(1, ChronoUnit.HOURS).isBefore(Instant.now())) {
 				deletePerson(entry.getKey());
+				keysToRemove.add(entry.getKey());
 
 				rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.DELETE.name(),
 						new NotificationMessage(entry.getKey(), "deleted person"));
 			}
+		}
+
+		for(String key : keysToRemove) {
+			debugPersons.remove(key);
 		}
 	}
 }
