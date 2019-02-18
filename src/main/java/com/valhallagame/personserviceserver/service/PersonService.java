@@ -45,23 +45,28 @@ public class PersonService {
 	private PersonRepository personRepository;
 
 	public Person savePerson(Person person) {
+		logger.info("Saving person {}", person);
 		return personRepository.save(person);
 	}
 
 	public void deletePerson(Person person) {
+		logger.info("Deleting person {}", person);
 		debugPersons.remove(person.getUsername());
 		personRepository.delete(person);
 	}
 
 	public void deletePerson(String username) {
+		logger.info("Deleting person with username {}", username);
 		personRepository.deleteByUsername(username);
 	}
 
 	public Optional<Person> getPerson(String username) {
+		logger.info("Getting person with username {}", username);
 		return personRepository.findByUsername(username);
 	}
 
 	public Person createNewDebugPerson(String singleton) {
+		logger.info("Creating new debug person singleton {} ", singleton);
 		String displayUsername = singleton != null ? singletonPersons.get(singleton) : null;
 
 		if(displayUsername == null) {
@@ -118,10 +123,12 @@ public class PersonService {
 	}
 
 	public List<Person> getOnlinePersons() {
+		logger.info("Getting online persons");
 		return personRepository.findByOnline(true);
 	}
 
 	public void deleteOldDebugPersons() {
+		logger.info("Deleting old debug persons");
 		List<String> keysToRemove = new ArrayList<>();
 		for(Map.Entry<String, Instant> entry : debugPersons.entrySet()) {
 			if(singletonPersons.values().stream().noneMatch(du -> du.toLowerCase().equals(entry.getKey())) &&

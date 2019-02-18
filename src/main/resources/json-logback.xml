@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- DO NOT CHANGE IN SERVICE, this file comes from ymer/scripts, change it there and move it
+    so that we can have the same logging everywhere! -->
+
+    <appender name="json" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="net.logstash.logback.layout.LogstashLayout">
+            <suffix class="ch.qos.logback.classic.PatternLayout">
+                <pattern>%n</pattern>
+            </suffix>
+        </layout>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="json"/>
+    </root>
+</configuration>
+
+
+
