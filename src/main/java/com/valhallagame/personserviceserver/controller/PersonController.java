@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.valhallagame.common.JS;
 import com.valhallagame.common.rabbitmq.NotificationMessage;
 import com.valhallagame.common.rabbitmq.RabbitMQRouting;
+import com.valhallagame.common.rabbitmq.RabbitSender;
 import com.valhallagame.personserviceclient.message.*;
 import com.valhallagame.personserviceserver.model.Person;
 import com.valhallagame.personserviceserver.model.Session;
@@ -11,7 +12,6 @@ import com.valhallagame.personserviceserver.service.PersonService;
 import com.valhallagame.personserviceserver.service.SessionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +34,7 @@ public class PersonController {
 	private static final String NOT_FOUND = "Unable to find a user with that username/password combination";
 
 	@Autowired
-	private RabbitTemplate rabbitTemplate;
+	private RabbitSender rabbitSender;
 
 	@Autowired
 	private PersonService personService;
@@ -112,7 +112,7 @@ public class PersonController {
 			person.setDisplayUsername(input.getDisplayUsername());
 			person.setOnline(true);
 			personService.savePerson(person);
-			rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.ONLINE.name(),
+			rabbitSender.sendMessage(RabbitMQRouting.Exchange.PERSON, RabbitMQRouting.Person.ONLINE.name(),
 					new NotificationMessage(person.getUsername(), "Online"));
 			return JS.message(HttpStatus.OK, session);
 		} else {
@@ -131,12 +131,10 @@ public class PersonController {
 
 		user.setOnline(false);
 		user = personService.savePerson(user);
-		Optional<Session> optSession = sessionService.getSessionFromPerson(user);
-		if (optSession.isPresent()) {
-			sessionService.deleteSession(optSession.get());
-		}
 
-		rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.OFFLINE.name(),
+		sessionService.getSessionFromPerson(user).ifPresent(session -> sessionService.deleteSession(session));
+
+		rabbitSender.sendMessage(RabbitMQRouting.Exchange.PERSON, RabbitMQRouting.Person.OFFLINE.name(),
 				new NotificationMessage(input.getUsername(), "Offline"));
 		return JS.message(HttpStatus.OK, "Logged out");
 	}
@@ -209,7 +207,7 @@ public class PersonController {
 		}
 
 		personService.deletePerson(optPerson.get());
-		rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.DELETE.name(),
+		rabbitSender.sendMessage(RabbitMQRouting.Exchange.PERSON, RabbitMQRouting.Person.DELETE.name(),
 				new NotificationMessage(input.getUsername(), "deleted person"));
 
 		return JS.message(HttpStatus.OK, "credentials valid");
@@ -221,17 +219,14 @@ public class PersonController {
 		logger.info("Create Debug Person called with {}", input);
 		Person debugPerson = personService.createNewDebugPerson(input.getSingleton());
 
-		rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.CREATE.name(),
+		rabbitSender.sendMessage(RabbitMQRouting.Exchange.PERSON, RabbitMQRouting.Person.CREATE.name(),
 				new NotificationMessage(debugPerson.getUsername(), "created debug person"));
 
-		Optional<Session> optSession = sessionService.getSessionFromPerson(debugPerson);
-		if (optSession.isPresent()) {
-			sessionService.deleteSession(optSession.get());
-		}
+		sessionService.getSessionFromPerson(debugPerson).ifPresent(session -> sessionService.deleteSession(session));
 
 		Session debugSession = sessionService.saveSession(new Session(input.getToken(), Instant.now(), debugPerson));
 
-		rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.ONLINE.name(),
+		rabbitSender.sendMessage(RabbitMQRouting.Exchange.PERSON, RabbitMQRouting.Person.ONLINE.name(),
 				new NotificationMessage(debugPerson.getUsername(), "Online"));
 		
 		return JS.message(HttpStatus.OK, debugSession);

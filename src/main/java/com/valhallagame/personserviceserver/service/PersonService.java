@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
 import com.valhallagame.common.rabbitmq.NotificationMessage;
 import com.valhallagame.common.rabbitmq.RabbitMQRouting;
+import com.valhallagame.common.rabbitmq.RabbitSender;
 import com.valhallagame.personserviceserver.model.Person;
 import com.valhallagame.personserviceserver.repository.PersonRepository;
 import okhttp3.OkHttpClient;
@@ -15,7 +16,6 @@ import okhttp3.Response;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +39,7 @@ public class PersonService {
 	private ConcurrentMap<String, Instant> debugPersons = new ConcurrentHashMap<>();
 
 	@Autowired
-	private RabbitTemplate rabbitTemplate;
+	private RabbitSender rabbitSender;
 
 	@Autowired
 	private PersonRepository personRepository;
@@ -136,7 +136,7 @@ public class PersonService {
 				deletePerson(entry.getKey());
 				keysToRemove.add(entry.getKey());
 
-				rabbitTemplate.convertAndSend(RabbitMQRouting.Exchange.PERSON.name(), RabbitMQRouting.Person.DELETE.name(),
+				rabbitSender.sendMessage(RabbitMQRouting.Exchange.PERSON, RabbitMQRouting.Person.DELETE.name(),
 						new NotificationMessage(entry.getKey(), "deleted person"));
 			}
 		}
