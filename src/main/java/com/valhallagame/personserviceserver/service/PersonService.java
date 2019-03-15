@@ -154,14 +154,26 @@ public class PersonService {
                 .forEach(this::setPersonOffline);
     }
 
-    public void setPersonOffline(Person user) {
-        if (user.isOnline()) {
-            user.setOnline(false);
-            user = savePerson(user);
+    public void setPersonOffline(Person person) {
+        if (person.isOnline()) {
+            person.setOnline(false);
+            person = savePerson(person);
             rabbitSender.sendMessage(
                     RabbitMQRouting.Exchange.PERSON,
                     RabbitMQRouting.Person.OFFLINE.name(),
-                    new NotificationMessage(user.getUsername(), "Offline")
+                    new NotificationMessage(person.getUsername(), "Offline")
+            );
+        }
+    }
+
+    public void setPersonOnline(Person person) {
+        if (!person.isOnline()) {
+            person.setOnline(true);
+            person = savePerson(person);
+            rabbitSender.sendMessage(
+                    RabbitMQRouting.Exchange.PERSON,
+                    RabbitMQRouting.Person.ONLINE.name(),
+                    new NotificationMessage(person.getUsername(), "Online")
             );
         }
     }
