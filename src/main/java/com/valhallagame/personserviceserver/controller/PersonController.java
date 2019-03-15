@@ -128,14 +128,9 @@ public class PersonController {
 		if (user == null) {
 			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with username: " + input.getUsername());
 		}
-
-		user.setOnline(false);
-		user = personService.savePerson(user);
-
 		sessionService.getSessionFromPerson(user).ifPresent(session -> sessionService.deleteSession(session));
+		personService.setPersonOffline(user);
 
-		rabbitSender.sendMessage(RabbitMQRouting.Exchange.PERSON, RabbitMQRouting.Person.OFFLINE.name(),
-				new NotificationMessage(input.getUsername(), "Offline"));
 		return JS.message(HttpStatus.OK, "Logged out");
 	}
 
