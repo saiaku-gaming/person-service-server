@@ -110,7 +110,8 @@ public class PersonService {
 
 		Response response = client.newCall(request).execute();
 
-		String jsonBody = response.body().string();
+        assert response.body() != null;
+        String jsonBody = response.body().string();
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -145,4 +146,23 @@ public class PersonService {
 			debugPersons.remove(key);
 		}
 	}
+
+    public void markPersonsOffline() {
+        getOnlinePersons()
+                .stream()
+                .filter(person -> person.getLastHeartbeat().isBefore(Instant.now().minusSeconds(120)))
+                .forEach(this::setPersonOffline);
+    }
+
+    public void setPersonOffline(Person user) {
+        if (user.isOnline()) {
+            user.setOnline(false);
+            user = savePerson(user);
+            rabbitSender.sendMessage(
+                    RabbitMQRouting.Exchange.PERSON,
+                    RabbitMQRouting.Person.OFFLINE.name(),
+                    new NotificationMessage(user.getUsername(), "Offline")
+            );
+        }
+    }
 }
