@@ -16,18 +16,14 @@
 		<version>1.5.8.RELEASE</version>
 	</parent>
 
-	<properties>
-		<docker.image.prefix>saiaku</docker.image.prefix>
-	</properties>
-
 	<repositories>
 		<repository>
 			<id>valhalla-release</id>
-			<url>https://artifactory.valhalla-game.com/libs-release</url>
+			<url>https://artifactory.valhalla-game.com/artifactory/libs-release</url>
 		</repository>
 		<repository>
 			<id>valhalla-snapshot</id>
-			<url>https://artifactory.valhalla-game.com/libs-snapshot</url>
+			<url>https://artifactory.valhalla-game.com/artifactory/libs-snapshot</url>
 		</repository>
 	</repositories>
 
@@ -67,7 +63,7 @@
 		<dependency>
 			<groupId>com.valhallagame.valhalla</groupId>
 			<artifactId>common</artifactId>
-            <version>1.14</version>
+            <version>1.17</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -94,7 +90,7 @@
 		<dependency>
 			<groupId>com.valhallagame.valhalla</groupId>
 			<artifactId>person-service-client</artifactId>
-            <version>1.3</version>
+            <version>1.4</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -121,12 +117,12 @@
 				<version>1.0.0</version>
 				<configuration>
 					<imageName>
-						registry.valhalla-game.com/${docker.image.prefix}/${project.artifactId}</imageName>
+						registry.valhalla-game.com/${project.artifactId}</imageName>
 					<forceTags>true</forceTags>
 					<imageTags>
 						<imageTag>latest</imageTag>
 					</imageTags>
-					<baseImage>frolvlad/alpine-oraclejdk8:slim</baseImage>
+					<baseImage>frolvlad/alpine-java:jdk8-slim</baseImage>
 					<entryPoint>["java", "-Xmx256m", "-Xss512k", "-Xms32m", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
 					<resources>
 						<resource>
