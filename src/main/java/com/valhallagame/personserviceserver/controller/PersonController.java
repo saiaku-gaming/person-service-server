@@ -110,10 +110,9 @@ public class PersonController {
 			sessionService.saveSession(session);
 
 			person.setDisplayUsername(input.getDisplayUsername());
-			person.setOnline(true);
+
+			personService.setPersonOnline(person);
 			personService.savePerson(person);
-			rabbitSender.sendMessage(RabbitMQRouting.Exchange.PERSON, RabbitMQRouting.Person.ONLINE.name(),
-					new NotificationMessage(person.getUsername(), "Online"));
 			return JS.message(HttpStatus.OK, session);
 		} else {
 			return JS.message(HttpStatus.FORBIDDEN, "User not found or wrong password.");
@@ -128,14 +127,9 @@ public class PersonController {
 		if (user == null) {
 			return JS.message(HttpStatus.NOT_FOUND, "Unable to find a user with username: " + input.getUsername());
 		}
-
-		user.setOnline(false);
-		user = personService.savePerson(user);
-
 		sessionService.getSessionFromPerson(user).ifPresent(session -> sessionService.deleteSession(session));
+		personService.setPersonOffline(user);
 
-		rabbitSender.sendMessage(RabbitMQRouting.Exchange.PERSON, RabbitMQRouting.Person.OFFLINE.name(),
-				new NotificationMessage(input.getUsername(), "Offline"));
 		return JS.message(HttpStatus.OK, "Logged out");
 	}
 
@@ -226,8 +220,7 @@ public class PersonController {
 
 		Session debugSession = sessionService.saveSession(new Session(input.getToken(), Instant.now(), debugPerson));
 
-		rabbitSender.sendMessage(RabbitMQRouting.Exchange.PERSON, RabbitMQRouting.Person.ONLINE.name(),
-				new NotificationMessage(debugPerson.getUsername(), "Online"));
+		personService.setPersonOnline(debugPerson);
 		
 		return JS.message(HttpStatus.OK, debugSession);
 	}
@@ -244,6 +237,7 @@ public class PersonController {
 		Person person = optPerson.get();
 		person.setLastHeartbeat(Instant.now());
 		personService.savePerson(person);
+		personService.setPersonOnline(person);
 
 		return JS.message(HttpStatus.OK, "heartbeaten");
 	}
