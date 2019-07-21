@@ -68,6 +68,22 @@ public class PersonController {
 		return JS.message(HttpStatus.OK, optPerson.get());
 	}
 
+    @RequestMapping(path = "/finished-tutorial", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<JsonNode> finishedTutorial(@Valid @RequestBody FinishedTutorialParameter input) {
+        logger.info("Finished tutorial called with {}", input);
+        Optional<Person> optPerson = personService.getPerson(input.getUsername());
+        if (!optPerson.isPresent()) {
+            return JS.message(HttpStatus.NOT_FOUND, "No person with that username was found!");
+        }
+
+        Person person = optPerson.get();
+        person.setFinishedTutorial(true);
+        personService.savePerson(person);
+
+        return JS.message(HttpStatus.OK, optPerson.get());
+    }
+
 	@RequestMapping(path = "/signup", method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<JsonNode> signup(@Valid @RequestBody SignupParameter input) {

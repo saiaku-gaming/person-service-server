@@ -1,20 +1,11 @@
 package com.valhallagame.personserviceserver.model;
 
-import java.time.Instant;
-
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-
-import org.mindrot.jbcrypt.BCrypt;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.mindrot.jbcrypt.BCrypt;
+
+import javax.persistence.*;
+import java.time.Instant;
 
 @Data
 @Entity
@@ -45,6 +36,9 @@ public class Person {
 	@Column(name = "last_heartbeat")
 	@Basic
 	private Instant lastHeartbeat;
+
+    @Column(name = "finished_tutorial")
+    private boolean finishedTutorial;
 
 	public Person(String displayUsername, String plaintextPassword) {
 		this.setUsername(displayUsername.toLowerCase());
