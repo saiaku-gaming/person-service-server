@@ -22,10 +22,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -110,7 +107,10 @@ public class PersonService {
 
 		Response response = client.newCall(request).execute();
 
-        assert response.body() != null;
+        if(response.body() == null) {
+        	return getBackupName();
+		}
+
         String jsonBody = response.body().string();
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -121,6 +121,45 @@ public class PersonService {
 		ObjectNode name = (ObjectNode) user.get("name");
 		ValueNode first = (ValueNode) name.get("first");
 		return first.textValue();
+	}
+
+	private String getBackupName() {
+		String[] names = {
+				"Juliann",
+				"Lino",
+				"Gale",
+				"Betsy",
+				"Lovella",
+				"Anton",
+				"Ilana",
+				"Artie",
+				"Janell",
+				"Marita",
+				"Aleen",
+				"Quiana",
+				"Kandra",
+				"Clemencia",
+				"Ana",
+				"Von",
+				"Mirella",
+				"Albert",
+				"Josefina",
+				"Vita",
+				"Gordon",
+				"Bree",
+				"Donnette",
+				"Andrea",
+				"Sydney",
+				"Cari",
+				"Hisako",
+				"Terrance",
+				"Annetta",
+				"Jocelyn"
+		};
+
+		Random random = new Random();
+
+		return names[random.nextInt(names.length)];
 	}
 
 	public List<Person> getOnlinePersons() {
