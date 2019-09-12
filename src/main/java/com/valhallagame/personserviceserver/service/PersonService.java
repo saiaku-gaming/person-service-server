@@ -108,7 +108,12 @@ public class PersonService {
 
 		Request request = new Request.Builder().url("https://randomuser.me/api/?nat=US").get().build();
 
-		Response response = client.newCall(request).execute();
+		Response response;
+		try {
+			response = client.newCall(request).execute();
+		} catch(Exception e) {
+			return getBackupName();
+		}
 
         if(response.body() == null) {
         	return getBackupName();
