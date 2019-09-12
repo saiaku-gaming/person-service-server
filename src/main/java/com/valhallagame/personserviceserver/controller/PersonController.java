@@ -6,8 +6,10 @@ import com.valhallagame.common.rabbitmq.NotificationMessage;
 import com.valhallagame.common.rabbitmq.RabbitMQRouting;
 import com.valhallagame.common.rabbitmq.RabbitSender;
 import com.valhallagame.personserviceclient.message.*;
+import com.valhallagame.personserviceserver.client.SteamClient;
 import com.valhallagame.personserviceserver.model.Person;
 import com.valhallagame.personserviceserver.model.Session;
+import com.valhallagame.personserviceserver.model.SteamUser;
 import com.valhallagame.personserviceserver.service.PersonService;
 import com.valhallagame.personserviceserver.service.SessionService;
 import org.slf4j.Logger;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +41,9 @@ public class PersonController {
 
 	@Autowired
 	private PersonService personService;
+
+	@Autowired
+	private SteamClient steamClient;
 
 	@Autowired
 	private SessionService sessionService;
@@ -61,6 +67,22 @@ public class PersonController {
 
 		return JS.message(HttpStatus.OK, optPerson.get());
 	}
+
+    @RequestMapping(path = "/finished-tutorial", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<JsonNode> finishedTutorial(@Valid @RequestBody FinishedTutorialParameter input) {
+        logger.info("Finished tutorial called with {}", input);
+        Optional<Person> optPerson = personService.getPerson(input.getUsername());
+        if (!optPerson.isPresent()) {
+            return JS.message(HttpStatus.NOT_FOUND, "No person with that username was found!");
+        }
+
+        Person person = optPerson.get();
+        person.setFinishedTutorial(true);
+        personService.savePerson(person);
+
+        return JS.message(HttpStatus.OK, optPerson.get());
+    }
 
 	@RequestMapping(path = "/signup", method = RequestMethod.POST)
 	@ResponseBody
@@ -87,6 +109,43 @@ public class PersonController {
 		}
 	}
 
+	@RequestMapping(path = "/steam-login", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<JsonNode> login(@Valid @RequestBody SteamLoginParameter input) throws IOException {
+		logger.info("steam login called");
+		Optional<String> steamIdOpt = steamClient.checkAuthSession(input.getAuthSessionTicket());
+		if (!steamIdOpt.isPresent()) {
+			return JS.message(HttpStatus.FORBIDDEN, "Steam authentication failure");
+		}
+		String steamId = steamIdOpt.get();
+		Optional<Person> personOpt = personService.getPersonFromSteamId(steamId);
+
+		if (personOpt.isPresent()) {
+			return createNewSession(personOpt.get());
+		}
+
+		logger.info("Creating new steam login");
+
+		Optional<Person> dbUserOpt = personService.getPerson(steamId);
+		if (dbUserOpt.isPresent()) {
+			return JS.message(HttpStatus.CONFLICT, "Username already taken.");
+		}
+
+		Person user = new Person(steamId, UUID.randomUUID().toString());
+		user = personService.savePerson(user);
+		SteamUser steamUser = new SteamUser(user.getId(), steamId);
+		personService.saveSteamUser(steamUser);
+		UUID randomUUID = UUID.randomUUID();
+		Session session = new Session(randomUUID.toString(), user);
+		sessionService.saveSession(session);
+		return JS.message(HttpStatus.OK, session);
+	}
+
+	private void logOut(Person person) {
+		Optional<Session> sessionOpt = sessionService.getSessionFromPerson(person);
+		sessionOpt.ifPresent(session -> sessionService.deleteSession(session));
+	}
+
 	@RequestMapping(path = "/login", method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<JsonNode> login(@Valid @RequestBody LoginParameter input) {
@@ -100,23 +159,20 @@ public class PersonController {
 		Person person = personOpt.get();
 
 		if (person.validatePassword(input.getPassword())) {
-			Optional<Session> sessionOpt = sessionService.getSessionFromPerson(person);
-			// Log out the old one. This is used so only one can be active at
-			// the same time.
-			sessionOpt.ifPresent(session -> sessionService.deleteSession(session));
-
-			UUID randomUUID = UUID.randomUUID();
-			Session session = new Session(randomUUID.toString(), person);
-			sessionService.saveSession(session);
-
 			person.setDisplayUsername(input.getDisplayUsername());
-
-			personService.setPersonOnline(person);
-			personService.savePerson(person);
-			return JS.message(HttpStatus.OK, session);
+			return createNewSession(person);
 		} else {
 			return JS.message(HttpStatus.FORBIDDEN, "User not found or wrong password.");
 		}
+	}
+
+	private ResponseEntity<JsonNode> createNewSession(Person person) {
+		logOut(person); // ensure that we do not have multiple sessions
+		Session session = new Session(UUID.randomUUID().toString(), person);
+		sessionService.saveSession(session);
+		personService.setPersonOnline(person);
+		personService.savePerson(person);
+		return JS.message(HttpStatus.OK, session);
 	}
 
 	@RequestMapping(path = "/logout", method = RequestMethod.POST)

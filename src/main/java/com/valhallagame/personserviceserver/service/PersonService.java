@@ -9,7 +9,9 @@ import com.valhallagame.common.rabbitmq.NotificationMessage;
 import com.valhallagame.common.rabbitmq.RabbitMQRouting;
 import com.valhallagame.common.rabbitmq.RabbitSender;
 import com.valhallagame.personserviceserver.model.Person;
+import com.valhallagame.personserviceserver.model.SteamUser;
 import com.valhallagame.personserviceserver.repository.PersonRepository;
+import com.valhallagame.personserviceserver.repository.SteamRepository;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -41,6 +43,9 @@ public class PersonService {
 	@Autowired
 	private PersonRepository personRepository;
 
+    @Autowired
+    private SteamRepository steamRepository;
+
 	public Person savePerson(Person person) {
 		logger.info("Saving person {}", person);
 		return personRepository.save(person);
@@ -49,12 +54,10 @@ public class PersonService {
 	public void deletePerson(Person person) {
 		logger.info("Deleting person {}", person);
 		debugPersons.remove(person.getUsername());
+        steamRepository.deleteByPersonId(person.getId());
 		personRepository.delete(person);
-	}
-
-	public void deletePerson(String username) {
-		logger.info("Deleting person with username {}", username);
-		personRepository.deleteByUsername(username);
+        rabbitSender.sendMessage(RabbitMQRouting.Exchange.PERSON, RabbitMQRouting.Person.DELETE.name(),
+                new NotificationMessage(person.getUsername(), "deleted person"));
 	}
 
 	public Optional<Person> getPerson(String username) {
@@ -169,20 +172,16 @@ public class PersonService {
 
 	public void deleteOldDebugPersons() {
 		logger.info("Deleting old debug persons");
-		List<String> keysToRemove = new ArrayList<>();
+        List<String> usersToRemove = new ArrayList<>();
 		for(Map.Entry<String, Instant> entry : debugPersons.entrySet()) {
 			if(singletonPersons.values().stream().noneMatch(du -> du.toLowerCase().equals(entry.getKey())) &&
 					entry.getValue().plus(1, ChronoUnit.HOURS).isBefore(Instant.now())) {
-				deletePerson(entry.getKey());
-				keysToRemove.add(entry.getKey());
-
-				rabbitSender.sendMessage(RabbitMQRouting.Exchange.PERSON, RabbitMQRouting.Person.DELETE.name(),
-						new NotificationMessage(entry.getKey(), "deleted person"));
+                usersToRemove.add(entry.getKey());
 			}
 		}
 
-		for(String key : keysToRemove) {
-			debugPersons.remove(key);
+        for (String username : usersToRemove) {
+            deletePerson(username);
 		}
 	}
 
@@ -215,5 +214,24 @@ public class PersonService {
                     new NotificationMessage(person.getUsername(), "Online")
             );
         }
+    }
+
+    public Optional<Person> getPersonFromSteamId(String steamId) {
+        return steamRepository
+                .findBySteamId(steamId)
+                .flatMap(steamUser -> Optional.ofNullable(personRepository.findOne(steamUser.getPersonId())));
+    }
+
+    private void deletePerson(String username) {
+        logger.info("Deleting person with username {}", username);
+        Optional<Person> personOpt = personRepository.findByUsername(username);
+        if (!personOpt.isPresent()) {
+            return;
+        }
+        deletePerson(personOpt.get());
+    }
+
+    public SteamUser saveSteamUser(SteamUser steamUser) {
+        return steamRepository.save(steamUser);
     }
 }
