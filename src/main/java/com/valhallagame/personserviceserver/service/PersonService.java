@@ -27,6 +27,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -104,7 +105,11 @@ public class PersonService {
 	}
 
 	private String getRandomName() throws IOException {
-		OkHttpClient client = new OkHttpClient();
+		OkHttpClient client = new OkHttpClient.Builder()
+				.connectTimeout(1, TimeUnit.SECONDS)
+				.writeTimeout(1, TimeUnit.SECONDS)
+				.readTimeout(1, TimeUnit.SECONDS)
+				.build();
 
 		Request request = new Request.Builder().url("https://randomuser.me/api/?nat=US").get().build();
 
