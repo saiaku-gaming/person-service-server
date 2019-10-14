@@ -217,6 +217,7 @@ public class PersonService {
     public void setPersonOnline(Person person) {
         if (!person.isOnline()) {
             person.setOnline(true);
+			person.setLastHeartbeat(Instant.now());
             person = savePerson(person);
             rabbitSender.sendMessage(
                     RabbitMQRouting.Exchange.PERSON,
