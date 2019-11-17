@@ -92,7 +92,7 @@ public class PersonService {
 		Optional<Person> personOpt = getPerson(displayUsername.toLowerCase());
 		Person person;
 		if (!personOpt.isPresent()) {
-			person = new Person(displayUsername, sha1HexPass);
+            person = new Person(displayUsername.toLowerCase(), displayUsername, sha1HexPass);
 			person.setOnline(true);
 			personRepository.save(person);
 		} else {
@@ -244,5 +244,20 @@ public class PersonService {
 
     public SteamUser saveSteamUser(SteamUser steamUser) {
         return steamRepository.save(steamUser);
+    }
+
+    public void setDisplayUsername(Person person, String newDisplayUsername) {
+        if (person.getDisplayUsername().equals(newDisplayUsername)) {
+            return;
+        }
+        person.setDisplayUsername(newDisplayUsername);
+        savePerson(person);
+        NotificationMessage displayUsernameChange = new NotificationMessage(person.getUsername(), "Display Username Change");
+        displayUsernameChange.addData("newDisplayUsername", newDisplayUsername);
+        rabbitSender.sendMessage(
+                RabbitMQRouting.Exchange.PERSON,
+                RabbitMQRouting.Person.DISPLAYNAME_CHANGE.name(),
+                displayUsernameChange
+        );
     }
 }
