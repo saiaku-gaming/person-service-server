@@ -142,7 +142,7 @@ public class PersonController {
         Optional<String> steamProfileName = steamClient.getProfileName(steamId);
         String displayUsername = steamProfileName.orElse(steamId);
 
-        Person user = new Person(steamId, displayUsername, UUID.randomUUID().toString());
+        Person user = new Person("steam:" + steamId, displayUsername, UUID.randomUUID().toString());
 		user = personService.savePerson(user);
 		SteamUser steamUser = new SteamUser(user.getId(), steamId);
 		personService.saveSteamUser(steamUser);
