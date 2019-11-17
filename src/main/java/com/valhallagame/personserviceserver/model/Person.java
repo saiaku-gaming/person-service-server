@@ -40,8 +40,8 @@ public class Person {
     @Column(name = "finished_tutorial")
     private boolean finishedTutorial;
 
-	public Person(String displayUsername, String plaintextPassword) {
-		this.setUsername(displayUsername.toLowerCase());
+	public Person(String username, String displayUsername, String plaintextPassword) {
+		this.setUsername(username);
 		this.setDisplayUsername(displayUsername);
 		this.password = BCrypt.hashpw(plaintextPassword, BCrypt.gensalt());
 		this.lastHeartbeat = Instant.now();

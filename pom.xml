@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>person-service-server</artifactId>
-	<version>1.20</version>
+	<version>1.21</version>
 	<packaging>jar</packaging>
 	<groupId>com.valhallagame.valhalla</groupId>
 
@@ -63,7 +63,7 @@
 		<dependency>
 			<groupId>com.valhallagame.valhalla</groupId>
 			<artifactId>common</artifactId>
-            <version>1.17</version>
+			<version>1.19</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

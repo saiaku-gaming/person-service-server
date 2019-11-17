@@ -99,7 +99,7 @@ public class PersonController {
 			if (input.getPassword().isEmpty()) {
 				return JS.message(HttpStatus.BAD_REQUEST, "Empty password.");
 			}
-			Person user = new Person(input.getDisplayUsername(), input.getPassword());
+            Person user = new Person(input.getDisplayUsername().toLowerCase(), input.getDisplayUsername(), input.getPassword());
 			personService.savePerson(user);
 			UUID randomUUID = UUID.randomUUID();
 			Session session = new Session(randomUUID.toString(), user);
@@ -121,6 +121,14 @@ public class PersonController {
 		Optional<Person> personOpt = personService.getPersonFromSteamId(steamId);
 
 		if (personOpt.isPresent()) {
+            Person person = personOpt.get();
+            // lets always update the display username when login in.
+            steamClient.getProfileName(steamId).ifPresent(steamProfileName -> {
+                if (!person.getDisplayUsername().equals(steamProfileName)) {
+                    personService.setDisplayUsername(person, steamProfileName);
+                }
+            });
+
 			return createNewSession(personOpt.get());
 		}
 
@@ -131,7 +139,10 @@ public class PersonController {
 			return JS.message(HttpStatus.CONFLICT, "Username already taken.");
 		}
 
-		Person user = new Person(steamId, UUID.randomUUID().toString());
+        Optional<String> steamProfileName = steamClient.getProfileName(steamId);
+        String displayUsername = steamProfileName.orElse(steamId);
+
+        Person user = new Person(steamId, displayUsername, UUID.randomUUID().toString());
 		user = personService.savePerson(user);
 		SteamUser steamUser = new SteamUser(user.getId(), steamId);
 		personService.saveSteamUser(steamUser);
@@ -141,7 +152,7 @@ public class PersonController {
 		return JS.message(HttpStatus.OK, session);
 	}
 
-	private void logOut(Person person) {
+    private void deleteSession(Person person) {
 		Optional<Session> sessionOpt = sessionService.getSessionFromPerson(person);
 		sessionOpt.ifPresent(session -> sessionService.deleteSession(session));
 	}
@@ -167,7 +178,7 @@ public class PersonController {
 	}
 
 	private ResponseEntity<JsonNode> createNewSession(Person person) {
-		logOut(person); // ensure that we do not have multiple sessions
+        deleteSession(person); // ensure that we do not have multiple sessions
 		Session session = new Session(UUID.randomUUID().toString(), person);
 		sessionService.saveSession(session);
 		personService.setPersonOnline(person);

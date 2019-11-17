@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -72,13 +73,69 @@ public class SteamClient {
         return client.newCall(request).execute();
     }
 
-    @SuppressWarnings("WeakerAccess")
-    private static class AuthResponseWrapper {
-        public Response response;
+    public Optional<String> getProfileName(String steamId) throws IOException {
+        if (StringUtils.isBlank(steamApiKey) || StringUtils.isBlank(steamAppId)) {
+            logger.error("steamApiKey or steamAppId was blank!");
+            return Optional.empty();
+        }
+        String url = String.format("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=%s&steamids=%s", steamApiKey, steamId);
+        logger.info("Sending steam player info request {}", url);
+        okhttp3.Response response = get(url);
+        if (response.code() != 200) {
+            logger.error("error response from steam api: " + response.toString() + " with body" + response.body());
+            return Optional.empty();
+        }
+        try {
+            String body = response.body() == null ? null : response.body().string();
+            logger.info("Steam responded to player info request with body {}", body);
+            PlayerSummariesResponseWrapper authResponseWrapper = objectMapper.readValue(body, PlayerSummariesResponseWrapper.class);
+            if (authResponseWrapper.response.error != null) {
+                return Optional.empty();
+            }
+            return Optional.of(authResponseWrapper.response.players.get(0).personaname);
+        } catch (Exception e) {
+            logger.error("Got error when parsing response body", e);
+            return Optional.empty();
+        }
     }
 
     @SuppressWarnings("WeakerAccess")
-    private static class Response {
+    private static class PlayerSummariesResponseWrapper {
+        public PlayerSummariesResponse response;
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    private static class PlayerSummariesResponse {
+        public List<Player> players;
+        public Error error;
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    private static class Player {
+        public String steamid;
+        public Integer communityvisibilitystate;
+        public Integer profilestate;
+        public String personaname;
+        public Long lastlogoff;
+        public String profileurl;
+        public String avatar;
+        public String avatarmedium;
+        public String avatarfull;
+        public Integer personastate;
+        public String realname;
+        public String primaryclanid;
+        public Long timecreated;
+        public Integer personastateflags;
+        public String loccountrycode;
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    private static class AuthResponseWrapper {
+        public AuthResponse response;
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    private static class AuthResponse {
         public Params params;
         public Error error;
     }
